@@ -1,0 +1,29 @@
+{
+  "name": "Gdsc",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "turbo": "^2.0.9",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "npm@10.2.3",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "@edgestore/react": "^0.2.1",
+    "@edgestore/server": "^0.2.1",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  }
+}
