@@ -1,7 +1,8 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import bcrypt from "bcrypt"
-import db from "@repo/db/client"
+import bcrypt from 'bcrypt';
+import db from '@repo/db/client';
+import { verifyRecaptcha } from '../../../../@/lib/verifyRecaptcha';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -11,23 +12,26 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'text' },
         password: { label: 'Password', type: 'password' },
+        recaptchaToken: { label: 'reCAPTCHA Token', type: 'text' },
       },
       async authorize(credentials: any): Promise<any> {
         try {
+          const recaptchaValid = await verifyRecaptcha(credentials.recaptchaToken);
+          if (!recaptchaValid) {
+            throw new Error('Invalid reCAPTCHA');
+          }
+
           const user = await db.user.findFirst({
             where: {
-              email: credentials.identifier
-            }
-        });
-          
+              email: credentials.email,
+            },
+          });
+
           if (!user) {
             throw new Error('No user found with this email');
           }
-         
-          const isPasswordCorrect = await bcrypt.compare(
-            credentials.password,
-            user.password
-          );
+
+          const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password);
           if (isPasswordCorrect && user.isverified) {
             return user;
           } else {
@@ -42,7 +46,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id?.toString(); 
+        token.id = user.id?.toString();
         token.isVerified = user.isVerified;
         token.email = user.email;
       }
